@@ -171,6 +171,31 @@ $(function(){
         el: $('#js-distance')
     });
 
+    new (Backbone.View.extend({
+        tagName: 'div',
+        template: _.template($('#js-gyro-tmpl').html()),
+        gyros: [],
+
+        initialize: function(){
+            this.receiveGyro();
+        },
+
+        receiveGyro: function(){
+            var self = this;
+            $.get('/gyro/', function(data){
+                self.gyros = JSON.parse(data);
+                self.render();
+                setTimeout($.proxy(self.receiveGyro, self), 300);
+            })
+        },
+
+        render: function(){
+            this.$el.html(this.template(this));
+        }
+    }))({
+        el: $('#js-gyro')
+    });
+
     var ArmView = Backbone.View.extend({
         tagName: 'div',
         template: _.template($('#js-controller-tmpl').html()),

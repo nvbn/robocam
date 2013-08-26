@@ -12,7 +12,10 @@
     margin-top: -20px;
 }
 
-.distance {
-    margin-right: 43px;
-    font-size: 14px;
+.sensors {
+    margin-left: -30px;
+}
+
+.sensors h2 {
+    margin-left: 28px;
 }

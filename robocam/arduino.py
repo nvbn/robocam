@@ -37,3 +37,6 @@ class GyroAccelTarget(object):
                 self.share_values(values)
             except Exception as e:
                 print e
+
+
+gyro_accel_target = GyroAccelTarget()

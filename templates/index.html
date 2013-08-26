@@ -22,10 +22,18 @@
         </button>
     </script>
     <script type="text/template" id='js-distance-tmpl'>
-        <span class="label label-default">
+        <div class='col-lg-4'>
             Distance:
             <%= distance %>
-        </span>
+        </div>
+    </script>
+    <script type="text/template" id='js-gyro-tmpl'>
+        <div class='col-lg-4'>Acceleration x: <%= gyros[0] %></div>
+        <div class='col-lg-4'>Acceleration y: <%= gyros[1] %></div>
+        <div class='col-lg-4'>Acceleration z: <%= gyros[2] %></div>
+        <div class='col-lg-4'>Gyro x: <%= gyros[3] %></div>
+        <div class='col-lg-4'>Gyro y: <%= gyros[4] %></div>
+        <div class='col-lg-4'>Gyro z: <%= gyros[5] %></div>
     </script>
 </head>
 <body>
@@ -44,11 +52,15 @@
                 <button type="button" class="btn" id='js-show-canny'>
                     Show canny
                 </button>
-
-                <div class="pull-right distance" id='js-distance'>
-                </div>
             </div>
             <div class='col-lg-3 controller' id='js-controller'></div>
+        </div>
+        <div class='row sensors'>
+            <h2>Sensors</h2>
+            <div class="col-lg-8">
+                <div id='js-distance'></div>
+                <div id='js-gyro'></div>
+            </div>
         </div>
     </div>
 </body>
