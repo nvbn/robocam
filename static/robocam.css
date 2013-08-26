@@ -6,6 +6,7 @@
 .camera-preview canvas {
     width: 800px;
     height: 600px;
+    margin-bottom: 10px;
 }
 
 .controller {
@@ -14,8 +15,13 @@
 
 .sensors {
     margin-left: -30px;
+    margin-top: 10px;
 }
 
 .sensors h2 {
     margin-left: 28px;
+}
+
+.sensors canvas {
+    margin-bottom: -20px;
 }

@@ -146,54 +146,59 @@ $(function(){
         el: $('#js-camera-preview')
     });
 
-    new (Backbone.View.extend({
+    var sensorCount = 0;
+
+    var SensorView = Backbone.View.extend({
         tagName: 'div',
-        template: _.template($('#js-distance-tmpl').html()),
-        distance: '',
+        template: _.template($('#js-sensor-tmpl').html()),
+        holder: $('#js-sensor-area'),
 
         initialize: function(){
-            this.receiveDistance();
-        },
-
-        receiveDistance: function(){
-            var self = this;
-            $.get('/distance/', function(data){
-                self.distance = data;
-                self.render();
-                setTimeout($.proxy(self.receiveDistance, self), 300);
-            })
+            this.values = _.range(50);
+            this.labels = _.map(_.range(50), function(){
+                return '';
+            });
+            this.options.canvasId = 'canvas-' + sensorCount;
+            sensorCount++;
+            this.render();
         },
 
         render: function(){
-            this.$el.html(this.template(this));
-        }
-    }))({
-        el: $('#js-distance')
-    });
-
-    new (Backbone.View.extend({
-        tagName: 'div',
-        template: _.template($('#js-gyro-tmpl').html()),
-        gyros: [],
-
-        initialize: function(){
-            this.receiveGyro();
+            this.$el.html(this.template(this.options));
+            this.$el.appendTo(this.holder);
         },
 
-        receiveGyro: function(){
-            var self = this;
-            $.get('/gyro/', function(data){
-                self.gyros = JSON.parse(data);
-                self.render();
-                setTimeout($.proxy(self.receiveGyro, self), 300);
-            })
+        update: function(value){
+            value = parseInt(value, 10);
+            this.$el.find('.value').html(value);
+            this.values.push(value);
+            this.values = _.last(this.values, 50);
+            this.drawGraph();
         },
 
-        render: function(){
-            this.$el.html(this.template(this));
+        drawGraph: function(){
+            console.log(this.options.canvasId);
+            var canvas = this.$el.find('#' + this.options.canvasId).get(0);
+            canvas.width = canvas.width;
+            console.log(canvas);
+            var context = canvas.getContext("2d");
+            console.log(this.values);
+            new Chart(context).Line({
+                labels: this.labels,
+                datasets: [{
+                    fillColor: "rgba(151,187,205,0.5)",
+                    strokeColor: "rgba(151,187,205,1)",
+                    pointColor: "rgba(151,187,205,1)",
+                    pointStrokeColor : "#fff",
+                    data: this.values
+                }]
+            }, {
+                pointDot : false,
+                animation : false,
+                scaleShowLabels: false,
+                scaleShowLabelBackdrop: false
+            });
         }
-    }))({
-        el: $('#js-gyro')
     });
 
     var ArmView = Backbone.View.extend({
@@ -269,5 +274,38 @@ $(function(){
         var view = new ArmView(options);
         view.render();
         $('#js-controller').append(view.$el);
-    })
+    });
+
+    var distanceSensor = new SensorView({name: 'Distance'});
+
+    var updateDistance = function(){
+        $.get('/distance/', function(data){
+            distanceSensor.update(data);
+            setTimeout(updateDistance, 300);
+        })
+    };
+    updateDistance();
+
+    var gyroSensors = _.map([
+        'Acceleration x',
+        'Acceleration y',
+        'Acceleration z',
+        'Gyro x',
+        'Gyro y',
+        'Gyro z'
+    ], function(name){
+        return new SensorView({name: name});
+    });
+
+    var updateGyros = function(){
+        $.get('/gyro/', function(data){
+            var values = JSON.parse(data);
+            _.each(gyroSensors, function(sensor, num){
+                sensor.update(values[num]);
+            });
+
+            setTimeout(updateGyros, 300);
+        })
+    };
+    updateGyros();
 });

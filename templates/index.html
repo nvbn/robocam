@@ -9,6 +9,7 @@
     <script type="text/javascript" src="/static/bower_components/backbone/backbone.js"></script>
     <script type="test/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.js"></script>
     <script type="text/javascript" src="/static/bower_components/jsfeat/build/jsfeat.js"></script>
+    <script type="text/javascript" src="/static/bower_components/nnnick-chartjs/Chart.js"></script>
     <script type="text/javascript" src="/static/robocam.js"></script>
     <script type="text/template" id='js-controller-tmpl'>
         <h2 class='controller-part'><%= part %>:</h2>
@@ -21,19 +22,11 @@
             [<span class='key'><%= rightKey %></span>]
         </button>
     </script>
-    <script type="text/template" id='js-distance-tmpl'>
-        <div class='col-lg-4'>
-            Distance:
-            <%= distance %>
+    <script type='text/template' id='js-sensor-tmpl'>
+        <div class='col-lg-3'>
+            <canvas id='<%= canvasId %>' width="200" height="100"></canvas>
+            <div><%= name %>: <span class='value'></span></div>
         </div>
-    </script>
-    <script type="text/template" id='js-gyro-tmpl'>
-        <div class='col-lg-4'>Acceleration x: <%= gyros[0] %></div>
-        <div class='col-lg-4'>Acceleration y: <%= gyros[1] %></div>
-        <div class='col-lg-4'>Acceleration z: <%= gyros[2] %></div>
-        <div class='col-lg-4'>Gyro x: <%= gyros[3] %></div>
-        <div class='col-lg-4'>Gyro y: <%= gyros[4] %></div>
-        <div class='col-lg-4'>Gyro z: <%= gyros[5] %></div>
     </script>
 </head>
 <body>
@@ -56,8 +49,7 @@
             <div class='col-lg-3 controller' id='js-controller'></div>
         </div>
         <div class='row sensors'>
-            <h2>Sensors</h2>
-            <div class="col-lg-8">
+            <div class="col-lg-12" id="js-sensor-area">
                 <div id='js-distance'></div>
                 <div id='js-gyro'></div>
             </div>
