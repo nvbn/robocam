@@ -1,0 +1,18 @@
+.controller-part, .key, .controller-btn {
+    text-transform: capitalize;
+    width: 100px;
+}
+
+.camera-preview canvas {
+    width: 800px;
+    height: 600px;
+}
+
+.controller {
+    margin-top: -20px;
+}
+
+.distance {
+    margin-right: 43px;
+    font-size: 14px;
+}

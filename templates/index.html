@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ROBOCAM</title>
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/robocam.css" />
+    <script type="text/javascript" src="/static/bower_components/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/bower_components/underscore/underscore.js"></script>
+    <script type="text/javascript" src="/static/bower_components/backbone/backbone.js"></script>
+    <script type="test/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jsfeat/build/jsfeat.js"></script>
+    <script type="text/javascript" src="/static/robocam.js"></script>
+    <script type="text/template" id='js-controller-tmpl'>
+        <h2 class='controller-part'><%= part %>:</h2>
+        <button type="button" class="btn js-left-btn controller-btn">
+            <%= leftAction.replace('_', ' ').replace('rotate', '') %>
+            [<span class='key'><%= leftKey %></span>]
+        </button>
+        <button type="button" class="btn js-right-btn controller-btn">
+            <%= rightAction.replace('_', ' ').replace('rotate', '') %>
+            [<span class='key'><%= rightKey %></span>]
+        </button>
+    </script>
+    <script type="text/template" id='js-distance-tmpl'>
+        <span class="label label-default">
+            Distance:
+            <%= distance %>
+        </span>
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class='row'>
+            <div class='col-lg-12'>
+                <h1>ROBOCAM</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class='col-lg-9 camera-preview' id='js-camera-preview'>
+                <canvas width='800' height='600'></canvas>
+                <button type="button" class="btn" id='js-show-corners'>
+                    Show corners
+                </button>
+                <button type="button" class="btn" id='js-show-canny'>
+                    Show canny
+                </button>
+
+                <div class="pull-right distance" id='js-distance'>
+                </div>
+            </div>
+            <div class='col-lg-3 controller' id='js-controller'></div>
+        </div>
+    </div>
+</body>
+</html>
