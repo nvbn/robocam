@@ -1,22 +1,32 @@
+import json
+import redis
 from roboarm import Arm
-from .const import ACTION_TIMEOUT
+from .const import ACTION_TIMEOUT, REDIS_ARM_CHANNEL
 
 
 class Controller(object):
     """Arm controller"""
 
-    def __call__(self, options, arm_queue):
-        self.arm = Arm()
-        self._queue = arm_queue
-        self.loop()
+    def __init__(self):
+        self._init_arm()
+        self._init_redis()
 
-    def loop(self):
+    def _init_arm(self):
+        self.arm = Arm()
+
+    def _init_redis(self):
+        self._redis = redis.Redis()
+        self._pubsub = self._redis.pubsub()
+        self._pubsub.subscribe([REDIS_ARM_CHANNEL])
+
+    def run(self):
         """Arm controlling loop"""
-        while True:
+        for msg in self._pubsub.listen():
             try:
-                part, action = self._queue.get()
+                part, action = json.loads(msg['data'])
                 self.perform(part, action)
-            except Exception:
+            except Exception as e:
+                print e
                 continue
 
     def perform(self, part_name, action_name):
@@ -30,4 +40,6 @@ class Controller(object):
             action(timeout=ACTION_TIMEOUT)
 
 
-arm_target = Controller()
+def main():
+    controller = Controller()
+    controller.run()

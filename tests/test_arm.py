@@ -8,8 +8,13 @@ class ControllerCase(TestCase):
     """Arm controller case"""
 
     def setUp(self):
+        self._orig_init_arm = Controller._init_arm
+        Controller._init_arm = MagicMock()
         self.controller = Controller()
         self.controller.arm = MagicMock()
+
+    def tearDown(self):
+        Controller._init_arm = self._orig_init_arm
 
     def test_perform(self):
         """Test perform"""

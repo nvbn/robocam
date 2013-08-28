@@ -22,7 +22,12 @@ setup(
     install_requires=filter(len, open('requirements.txt').readlines()),
     entry_points={
         'console_scripts': [
-            'robocam=robocam.app:main',
+            'robocam_camera=robocam.camera:main',
+            'robocam_arduino=robocam.arduino:main',
+            'robocam_arm=robocam.arm:main',
+            'robocam_distance=robocam.gpio:main',
+            'robocam_web=robocam.web:main',
+            'robocam_fifo=robocam.fifo:main',
         ]
     },
 )

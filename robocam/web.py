@@ -3,7 +3,10 @@ import json
 import tornado.web
 import tornado.ioloop
 import tornado.template
-from .const import FIFO_PATH
+import tornado.websocket
+import tornado.gen
+import tornadoredis
+from .const import DEBUG, REDIS_CHANNEL, PORT, HOST, REDIS_ARM_CHANNEL
 
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -13,78 +16,51 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render('index.html')
 
 
-class CameraHandler(tornado.web.RequestHandler):
-    """Camera image handler"""
-
-    def __init__(self, application, *args, **kwargs):
-        self._queue = application.camera_queue
-        super(CameraHandler, self).__init__(application, *args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        self.set_header('Content-type', 'image/jpeg')
-        with open(FIFO_PATH) as img:
-            self.write(img.read())
-
-    def post(self, *args, **kwargs):
-        self._queue.put(self.get_argument('attrs'))
-
-
 class ArmHandler(tornado.web.RequestHandler):
     """Arm handler"""
 
     def __init__(self, application, *args, **kwargs):
-        self._queue = application.arm_queue
+        self.client = application.client
         super(ArmHandler, self).__init__(application, *args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self._queue.put((
+        self.client.publish(REDIS_ARM_CHANNEL, json.dumps([
             self.get_argument('part'),
             self.get_argument('action'),
-        ))
+        ]))
 
 
-class DistanceHandler(tornado.web.RequestHandler):
-    """Distance handler"""
+class SensorsHandler(tornado.websocket.WebSocketHandler):
+    """Sensors handler"""
 
-    def __init__(self, application, *args, **kwargs):
-        self._distance = application.distance
-        super(DistanceHandler, self).__init__(application, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(SensorsHandler, self).__init__(*args, **kwargs)
+        self.listen()
 
-    def get(self, *args, **kwargs):
-        self.write(str(self._distance.value))
+    @tornado.gen.engine
+    def listen(self):
+        self.client = tornadoredis.Client()
+        self.client.connect()
+        yield tornado.gen.Task(self.client.subscribe, REDIS_CHANNEL)
+        self.client.listen(self.on_message)
 
-
-class GyroAccellHandler(tornado.web.RequestHandler):
-    """Gyro and accell handler"""
-
-    def __init__(self, application, *args, **kwargs):
-        self._result_array = application.gyro_array
-        super(GyroAccellHandler, self).__init__(application, *args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        self.write(json.dumps(list(self._result_array)))
+    def on_message(self, msg):
+        if msg.kind == 'message':
+            self.write_message(str(msg.body))
 
 
 class WebApp(tornado.web.Application):
     """Web app"""
 
-    def __init__(
-            self, camera_queue, arm_queue, distance, gyro_array, **kwargs
-    ):
+    def __init__(self, **kwargs):
         path = os.path.abspath(os.path.dirname(__file__))
-
-        self.camera_queue = camera_queue
-        self.arm_queue = arm_queue
-        self.distance = distance
-        self.gyro_array = gyro_array
-
+        self.client = tornadoredis.Client()
+        self.client.connect()
         super(WebApp, self).__init__(
             [
                 (r'/', IndexHandler),
-                (r'/camera/', CameraHandler),
                 (r'/arm/', ArmHandler),
-                (r'/distance/', DistanceHandler),
-                (r'/gyro/', GyroAccellHandler),
+                (r'/sensors/', SensorsHandler),
             ],
             template_path=os.path.join(path, '../templates'),
             static_path=os.path.join(path, '../static'),
@@ -92,11 +68,8 @@ class WebApp(tornado.web.Application):
         )
 
 
-def web_target(options, camera_queue, arm_queue, distance, gyro_array):
+def main():
     """Web target"""
-    app = WebApp(
-        camera_queue, arm_queue, distance, gyro_array,
-        debug=options.debug,
-    )
-    app.listen(options.port, options.host)
+    app = WebApp(debug=DEBUG)
+    app.listen(PORT, HOST)
     tornado.ioloop.IOLoop.instance().start()

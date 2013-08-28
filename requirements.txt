@@ -4,3 +4,5 @@ nose
 mock
 RPIO
 pyserial
+redis
+tornado-redis

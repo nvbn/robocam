@@ -140,7 +140,7 @@ $(function(){
 
                 self.loadImage();
             };
-            image.src = '/camera/?i=' + this.hash;
+            image.src = '/img/img/?i=' + this.hash;
         }
     }))({
         el: $('#js-camera-preview')
@@ -177,12 +177,9 @@ $(function(){
         },
 
         drawGraph: function(){
-            console.log(this.options.canvasId);
             var canvas = this.$el.find('#' + this.options.canvasId).get(0);
             canvas.width = canvas.width;
-            console.log(canvas);
             var context = canvas.getContext("2d");
-            console.log(this.values);
             new Chart(context).Line({
                 labels: this.labels,
                 datasets: [{
@@ -278,14 +275,6 @@ $(function(){
 
     var distanceSensor = new SensorView({name: 'Distance'});
 
-    var updateDistance = function(){
-        $.get('/distance/', function(data){
-            distanceSensor.update(data);
-            setTimeout(updateDistance, 300);
-        })
-    };
-    updateDistance();
-
     var gyroSensors = _.map([
         'Acceleration x',
         'Acceleration y',
@@ -297,15 +286,16 @@ $(function(){
         return new SensorView({name: name});
     });
 
-    var updateGyros = function(){
-        $.get('/gyro/', function(data){
-            var values = JSON.parse(data);
-            _.each(gyroSensors, function(sensor, num){
-                sensor.update(values[num]);
-            });
+    var ws = new WebSocket('ws://10.42.0.55:8080/sensors/');
 
-            setTimeout(updateGyros, 300);
-        })
+    ws.onmessage = function(msg){
+        var data = JSON.parse(msg.data);
+
+        if (data[0] == 'gyro')
+            _.each(gyroSensors, function(sensor, num){
+                sensor.update(data[num + 1]);
+            });
+        else
+            distanceSensor.update(data);
     };
-    updateGyros();
 });

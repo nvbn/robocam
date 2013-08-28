@@ -3,35 +3,36 @@ try:
 except Exception:
     """Enbale testing on pc"""
 import time
+import json
+import redis
+from . import const
 
 
-class DistanceTarget(object):
+class Distance(object):
     """Distance target"""
 
-    def __init__(self, options, distance):
-        self.result = distance
-        self.options = options
+    def __init__(self):
+        self._redis = redis.Redis()
         self.pulse = 0.0001
         self.timeout = 2100
         self.countdown = self.timeout
         self._init_pins()
-        self.loop()
 
     def _init_pins(self):
         """Init pins"""
         RPIO.setmode(RPIO.BCM)
-        RPIO.setup(self.options.echo_pin, RPIO.IN, pull_up_down=RPIO.PUD_DOWN)
-        RPIO.setup(self.options.trig_pin, RPIO.OUT)
+        RPIO.setup(const.ECHO_PIN, RPIO.IN, pull_up_down=RPIO.PUD_DOWN)
+        RPIO.setup(const.TRIG_PIN, RPIO.OUT)
         self.set_trig(False)
         time.sleep(2)
 
     def set_trig(self, value):
         """Set trig"""
-        RPIO.output(self.options.trig_pin, value)
+        RPIO.output(const.TRIG_PIN, value)
 
     def get_echo(self):
         """Read echo"""
-        return RPIO.input(self.options.echo_pin)
+        return RPIO.input(const.ECHO_PIN)
 
     def wait_echo(self, value):
         """Wait echo"""
@@ -57,12 +58,18 @@ class DistanceTarget(object):
         else:
             return None
 
-    def loop(self):
+    def run(self):
         """Main loop"""
         while True:
             self.pulse_trig()
             duration = self.get_duration()
             if self.countdown > 0 and duration is not None:
-                self.result.value = duration * 1000000 / 58
+                value = duration * 1000000 / 58
+                self._redis.publish(const.REDIS_CHANNEL, json.dumps(value))
 
             time.sleep(0.1)
+
+
+def main():
+    distance = Distance()
+    distance.run()

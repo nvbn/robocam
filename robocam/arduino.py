@@ -1,19 +1,19 @@
 import serial
+import json
+import redis
+from . import const
 
 
-class GyroAccelTarget(object):
+class GyroAccel(object):
     """Gyro and accel"""
 
-    def __call__(self, options, result):
-        self._result = result
-        self._options = options
+    def __init__(self):
         self._init_connection()
-        self.loop()
+        self._redis = redis.Redis()
 
     def _init_connection(self):
-        """init serial connection"""
         self._serial = serial.Serial(
-            self._options.tty, self._options.baudrate,
+            const.ARDUINO_TTY, const.ARDUINO_BAUDRATE
         )
 
     def read_values(self):
@@ -26,10 +26,10 @@ class GyroAccelTarget(object):
 
     def share_values(self, values):
         """Share values"""
-        for num, val in enumerate(values):
-            self._result[num] = val
+        result = json.dumps(['gyro'] + values)
+        self._redis.publish(const.REDIS_CHANNEL, result)
 
-    def loop(self):
+    def run(self):
         """Consuming loop"""
         while True:
             try:
@@ -39,4 +39,6 @@ class GyroAccelTarget(object):
                 print e
 
 
-gyro_accel_target = GyroAccelTarget()
+def main():
+    gyroaccel = GyroAccel()
+    gyroaccel.run()
