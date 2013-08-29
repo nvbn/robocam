@@ -124,7 +124,7 @@ $(function(){
         loadImage: function(){
             var self = this;
 
-            var canvas = this.$el.find('canvas')[0];
+            var canvas = this.$el.find('#js-left')[0];
             var context = canvas.getContext('2d');
             var image = new Image();
 
@@ -297,4 +297,12 @@ $(function(){
             sensor.update(data[num + 1]);
         });
     };
+
+    navigator.webkitGetUserMedia(
+        {video: true, audio: false},
+        function(localMediaStream) {
+            var video = $('video')[0];
+            video.src = window.URL.createObjectURL(localMediaStream);
+        }
+    );
 });

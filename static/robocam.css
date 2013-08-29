@@ -25,3 +25,9 @@
 .sensors canvas {
     margin-bottom: -20px;
 }
+
+video {
+    width: 240px;
+    position: absolute;
+    left: 575px;
+}
