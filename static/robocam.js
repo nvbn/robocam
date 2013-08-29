@@ -275,7 +275,7 @@ $(function(){
 
     var distanceSensor = new SensorView({name: 'Distance'});
 
-    var gyroSensors = _.map([
+    var sensors = _.map([
         'Acceleration x',
         'Acceleration y',
         'Acceleration z',
@@ -286,16 +286,15 @@ $(function(){
         return new SensorView({name: name});
     });
 
+    sensors.push(distanceSensor);
+
     var ws = new WebSocket('ws://10.42.0.55:8080/sensors/');
 
     ws.onmessage = function(msg){
         var data = JSON.parse(msg.data);
 
-        if (data[0] == 'gyro')
-            _.each(gyroSensors, function(sensor, num){
-                sensor.update(data[num + 1]);
-            });
-        else
-            distanceSensor.update(data);
+        _.each(sensors, function(sensor, num){
+            sensor.update(data[num + 1]);
+        });
     };
 });

@@ -20,13 +20,13 @@ class GyroAccel(object):
         """Read values from port"""
         line = self._serial.readline()
         vals = map(int, line[:-2].split(' '))
-        if len(vals) != 6:
+        if len(vals) != 7:
             raise Exception()
         return vals
 
     def share_values(self, values):
         """Share values"""
-        result = json.dumps(['gyro'] + values)
+        result = json.dumps(['arduino'] + values)
         self._redis.publish(const.REDIS_CHANNEL, result)
 
     def run(self):
