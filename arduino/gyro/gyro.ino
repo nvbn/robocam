@@ -1,10 +1,13 @@
 #include <Wire.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
+#include "Ultrasonic.h"
 MPU6050 accelgyro;
  
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
+ 
+Ultrasonic ultrasonic(12, 13);
  
 void setup(){
     Wire.begin();
@@ -20,6 +23,7 @@ void loop(){
     Serial.print(az); Serial.print(" ");
     Serial.print(gx); Serial.print(" ");
     Serial.print(gy); Serial.print(" ");
-    Serial.println(gz);
+    Serial.print(gz); Serial.print(" ");
+    Serial.println(ultrasonic.Ranging(CM));
     delay(500);
 }
